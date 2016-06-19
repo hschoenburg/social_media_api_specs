@@ -43,6 +43,7 @@ frisby.create('OAuth2 token request')
 frisby.create('Get AirBnB data')
   .get(domain + userQueryUrl + "?access_token="+access_token)
   //.addHeader('Authorization', 'Bearer ' + response.access_token)
+  //access token passed as URL param rather than header.
   .expectStatus(200)
   .inspectJSON()
   .expectJSONTypes({
