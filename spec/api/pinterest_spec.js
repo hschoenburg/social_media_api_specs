@@ -1,45 +1,54 @@
-// OK here we are trying to write frisby specs for the Twitter API!
-
 var frisby = require('frisby')
 
-//https://api.pinterest.com/v1/users/airbnb/?access_token=AW-aPu0x4d9cpZLUlzz8npbLsAb5FFlk7-W4oidDLnc3Y4AsEwAAAAA&fields=first_name%2Cid%2Clast_name%2Curl
-var domain        = 'https://api.pinterest.com/v1/',
-    access_token  = 'AW-aPu0x4d9cpZLUlzz8npbLsAb5FFlk7-W4oidDLnc3Y4AsEwAAAAA',
-    access_token_param = '/?access_token='+access_token
-    //oauthTokenUrl = 'https://api.twitter.com/oauth2/token',
-    screen_name   = 'airbnb',
+// domain is what you will replace with your local server url
+var domain          = 'https://api.pinterest.com',
+    apiUrl          = domain + '/v1',
+    client_id       = '4840937341203786780', // insert yours here
+
+    // Here we provide the access token as a given because Pinterest 
+    // does not support client_credentials grant grant types.
+    access_token    = 'AW-aPu0x4d9cpZLUlzz8npbLsAb5FFlk7-W4oidDLnc3Y4AsEwAAAAA', //insert yours here
+    access_token_param = '/?access_token='+access_token,
+
+    // this you will replace with the url of your local server
+    oauthTokenUrl   = domain + '/oauth',
+    redirect_uri    = 'http://rebootsq.org', //use localhost here
+    screen_name     = 'airbnb',
     userQueryUrl    = 'users/',
     fields          = ['first_name','id','counts'],
     fields_param    = '&fields='+fields.join(',');
-    //username      = 'bk9usrOLdBAPBMEqLftT3vjsY',
-    //password      = 'VXl7rpxvfItlWDhfizJrHqvJzS0hmlay49ysgMW8Ogy7Glw3ZH',
-    //auth          = "Basic " + new Buffer(username + ":" + password).toString('base64');
+
 /* 
  * Like Instagram, Pinterest does not support
  * client_credential style authentication
- * so the access_token will be considered a given here.
- *
-frisby.create('OAuth2 token request')
-  .addHeader('Authorization', auth)
-  .addHeader('Accept', 'application/json')
-  .post(oauthTokenUrl, {
-    grant_type: 'client_credentials'
-  })
-  .expectStatus(200)
-  .afterJSON(function(response) {
-    console.log(domain + userQueryUrl + screen_name)
-*/
+ * so here is a test for the normal oauth user authorization flow
+ * that redirects the user to a page where they can grant
+ * the client access.
+ */
 
+frisby.create('OAuth2 token request')
+  .post(oauthTokenUrl, {
+    response_type: 'code',
+    client_id: client_id,
+    scope: 'read_public',
+    redirect_uri: redirect_uri
+  })
+  .expectStatus(302)
+  .toss();
+
+  // This test assumes an access_token has already been granted
+  // It users the access_token var from above
+ 
 frisby.create('Get AirBnB data')
   .get(domain + userQueryUrl + screen_name + access_token_param + fields_param)
-  //.addHeader('Authorization', 'Bearer ' + response.access_token)
-  //access token is treated as a URL param rather than Header
+  // Note: access token is treated as a URL param rather than Header
   .expectStatus(200)
   .expectJSONTypes("data", {
     first_name: String,
     id: String,
     counts: Object
   })
+  // This is what the response should look like!
   .expectJSON("data", {
     first_name: "Airbnb",
     counts: {
@@ -49,9 +58,5 @@ frisby.create('Get AirBnB data')
       boards: Number,
       likes: Number
     }
-  })
-  .afterJSON(function(user_data){
-    console.log("FINISHED");
-  }).
-toss();
+  }).toss();
 

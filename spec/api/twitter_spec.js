@@ -2,25 +2,29 @@
 
 var frisby = require('frisby')
 
-var domain        = 'https://api.twitter.com/1.1/',
-    oauthTokenUrl = 'https://api.twitter.com/oauth2/token',
-    userQueryUrl    = 'users/show.json?screen_name='
+var domain        = 'https://api.twitter.com/',
+    api_domain    = domain + '1.1/',
+    auth_domain   = domain + 'oauth2/token',
     screen_name   = 'Airbnb',
+    userQueryUrl  = api_domain + 'users/show.json?screen_name=' + screen_name,
     username      = 'bk9usrOLdBAPBMEqLftT3vjsY',
     password      = 'VXl7rpxvfItlWDhfizJrHqvJzS0hmlay49ysgMW8Ogy7Glw3ZH',
     auth          = "Basic " + new Buffer(username + ":" + password).toString('base64');
 
+  // This first request is for an access token
+  // using the client_credentials grant type
 frisby.create('OAuth2 token request')
   .addHeader('Authorization', auth)
   .addHeader('Accept', 'application/json')
-  .post(oauthTokenUrl, {
+  .post(auth_domain, {
     grant_type: 'client_credentials'
   })
   .expectStatus(200)
   .afterJSON(function(response) {
-    console.log(domain + userQueryUrl + screen_name)
+    // Ok now that we have our access token lets
+    // use the Bearer strategy to request some data!
     frisby.create('Get AirBnB data')
-      .get(domain + userQueryUrl + screen_name)
+      .get(userQueryUrl)
       .addHeader('Authorization', 'Bearer ' + response.access_token)
       .expectStatus(200)
       .expectJSONTypes({

@@ -4,7 +4,7 @@
 var frisby = require('frisby')
 
 var domain        = 'https://graph.facebook.com/',
-    oauthTokenUrl = 'https://graph.facebook.com/oauth/access_token?',
+    oauthTokenUrl = domain + 'oauth/access_token?',
     airBnBPageID  = '324826532457',
     fields        = 'id,name,picture',
     pageQueryUrl  = airBnBPageID + '/?fields=' + fields,
